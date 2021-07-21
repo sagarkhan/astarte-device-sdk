@@ -5,6 +5,21 @@
   "author": "sk.sagarkhan95@gmail.com",
   "license": "ISC",
   "main": "index.js",
+  "keywords": [
+    "node",
+    "typscript",
+    "astarte",
+    "device",
+    "sdk"
+  ],
+  "files": [
+    "build/**/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sagarkhan/astarte-device-sdk"
+  },
+  "homepage": "https://github.com/sagarkhan/astarte-device-sdk",
   "scripts": {
     "dev": "nodemon | pino-pretty",
     "dev:debug": "nodemon --inspect src/index.ts",
@@ -13,20 +28,15 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint 'src/**/*.ts'",
     "precise-commits": "precise-commits  --whitelist \"**/src/**/*\" --check-only",
-    "husky": "npm run lint && npm run precise-commits"
+    "husky": "npm run lint && npm run precise-commits",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run lint"
   },
   "husky": {
     "hooks": {
       "pre-commit": "npm run husky"
     }
   },
-  "keywords": [
-    "node",
-    "typscript",
-    "astarte",
-    "device",
-    "sdk"
-  ],
   "devDependencies": {
     "@types/node": "^15.12.4",
     "@types/pino": "^6.3.8",
