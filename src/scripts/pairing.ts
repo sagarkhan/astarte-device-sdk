@@ -1,7 +1,7 @@
 import httpClient from '../utils/http-client';
 import logger from '../utils/logger';
-import { PAIRING_INIT, OBTAIN_CERTS, OBTAIN_CONNECTION_INFO, REGISTER_CONFIGS } from '../utils/types';
-import { generateCSR } from '../utils/crypto';
+import { PAIRING_INIT, OBTAIN_CERTS, OBTAIN_CONNECTION_INFO, REGISTER_CONFIGS, VALIDATE_CERTS } from '../utils/types';
+import { generateCSR, getClientCertificate, saveClientCertificate } from '../utils/crypto';
 
 export default class Pairing {
   realm: string;
@@ -52,6 +52,20 @@ export default class Pairing {
 
   obtainCredentials = async (config: OBTAIN_CERTS) => {
     try {
+      const certificate = getClientCertificate(this.realm, config.hardwareId, config.dir);
+      if (certificate) {
+        try {
+          const request: VALIDATE_CERTS = {
+            ...config,
+            clientCertificate: certificate,
+          };
+          await this.validateCredentials(request);
+          return certificate;
+        } catch (err) {
+          logger.error(err);
+        }
+      }
+
       const csr = await generateCSR(this.realm, config.hardwareId, config.dir);
       const headers = { Authorization: `Bearer ${config.credentialSecret}` };
       const data = { data: { csr } };
@@ -61,10 +75,40 @@ export default class Pairing {
         data,
         { headers },
       );
-      return response;
+      const clientCertificate = response.data.client_crt;
+      saveClientCertificate(this.realm, config.hardwareId, config.dir, clientCertificate);
+      return clientCertificate;
     } catch (err) {
-      console.log(err);
       logger.error('Error in obtaining device credentials');
+      logger.error(err);
+      throw err;
+    }
+  };
+
+  validateCredentials = async (config: VALIDATE_CERTS) => {
+    try {
+      const headers = { Authorization: `Bearer ${config.credentialSecret}` };
+      const data = {
+        data: {
+          client_crt: Buffer.isBuffer(config.clientCertificate)
+            ? config.clientCertificate.toString('utf-8')
+            : config.clientCertificate,
+        },
+      };
+      const response = await httpClient.post(
+        `${this.pairingUrl}/${this.realm}/devices/${config.hardwareId}/protocols/astarte_mqtt_v1/credentials/verify`,
+        data,
+        { headers },
+      );
+
+      const isValid = response?.data?.valid;
+      if (!isValid) {
+        throw new Error('Certificate Invalid or expired');
+      }
+
+      return isValid;
+    } catch (err) {
+      logger.error('Error in validating client certificate');
       logger.error(err);
       throw err;
     }

@@ -54,7 +54,7 @@ export default class Device extends Pairing {
         return;
       }
 
-      const creds = await this.obtainCredentials({
+      const certificate = await this.obtainCredentials({
         credentialSecret: this.credentialSecret,
         hardwareId: this.hardwareId,
         dir: this.dir,
@@ -69,7 +69,7 @@ export default class Device extends Pairing {
 
       this.mqttClient = await mqtt.connectAsync(mqttUrl, {
         rejectUnauthorized: false,
-        cert: creds?.data?.client_crt,
+        cert: certificate,
         key: privateKey,
       });
 
@@ -247,7 +247,16 @@ export default class Device extends Pairing {
     switch (event) {
       case 'message':
         this.mqttClient.on('message', (topic, payload, packet) => {
-          cb(topic, deserialize(payload), packet);
+          if (Buffer.isBuffer(payload)) {
+            const index = 0;
+            const size =
+              payload[index] | (payload[index + 1] << 8) | (payload[index + 2] << 16) | (payload[index + 3] << 24);
+            if (size >= 5) {
+              cb(topic, deserialize(payload), packet);
+            }
+          } else {
+            cb(topic, payload, packet);
+          }
         });
         break;
       default:

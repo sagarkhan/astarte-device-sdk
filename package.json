@@ -21,6 +21,9 @@
     "url": "https://github.com/sagarkhan/astarte-device-sdk"
   },
   "homepage": "https://github.com/sagarkhan/astarte-device-sdk",
+  "engines": {
+    "node": ">=14.17.0"
+  },
   "scripts": {
     "dev": "nodemon | pino-pretty",
     "dev:debug": "nodemon --inspect src/index.ts",

@@ -25,6 +25,10 @@ export type OBTAIN_CERTS = OBTAIN_CONNECTION_INFO & {
   dir: string;
 };
 
+export type VALIDATE_CERTS = OBTAIN_CONNECTION_INFO & {
+  clientCertificate: string | Buffer;
+};
+
 export type DEVICE_INIT = {
   hardwareId: string;
   realm: string;
