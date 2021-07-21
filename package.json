@@ -1,6 +1,6 @@
 {
   "name": "astarte-device-sdk",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Astarte device SDK for NodeJS",
   "author": "sk.sagarkhan95@gmail.com",
   "license": "ISC",
