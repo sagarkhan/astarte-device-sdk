@@ -29,8 +29,7 @@
     "lint": "eslint 'src/**/*.ts'",
     "precise-commits": "precise-commits  --whitelist \"**/src/**/*\" --check-only",
     "husky": "npm run lint && npm run precise-commits",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm run lint"
+    "prepare": "npm run build"
   },
   "husky": {
     "hooks": {
