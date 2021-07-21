@@ -1,10 +1,11 @@
 {
   "name": "astarte-device-sdk",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Astarte device SDK for NodeJS",
   "author": "sk.sagarkhan95@gmail.com",
   "license": "ISC",
-  "main": "index.js",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "keywords": [
     "node",
     "typscript",
