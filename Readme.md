@@ -5,15 +5,10 @@ NodeJS Device SDK for [Astarte IOT Platform](https://github.com/astarte-platform
 
 ### Installation
 
-Install with NPM
+Install with [NPM](https://www.npmjs.com/package/astarte-device-sdk)
+
 ```
 npm i astarte-device-sdk
-```
-
-Install with yarn
-
-```
-yarn add astarte-device-sdk
 ```
 
 ---
