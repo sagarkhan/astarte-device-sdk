@@ -15,6 +15,7 @@ import {
 
 export default class Device extends Pairing {
   private mqttClient: AsyncMqttClient;
+  private baseTopic: string;
   initialized: boolean = false;
   hardwareId: string;
   realm: string;
@@ -36,6 +37,7 @@ export default class Device extends Pairing {
     this.pairingUrl = init.pairingUrl;
     this.pairingToken = init.pairingToken;
     this.dir = init.dir;
+    this.baseTopic = `${this.realm}/${this.hardwareId}`;
   }
 
   addInterface(defination: INTERFACE_DEFINATION) {
@@ -85,14 +87,16 @@ export default class Device extends Pairing {
           logger.debug('Publishing Introspection');
           logger.debug(introspection);
 
-          this.mqttClient.publish(`${this.realm}/${this.hardwareId}`, introspection, { qos: 2 });
+          this.mqttClient.publish(`${this.baseTopic}`, introspection, { qos: 2 });
         }
 
         logger.debug('Publishing Empty Cache Control');
-        this.mqttClient.publish(`${this.realm}/${this.hardwareId}/control/emptyCache`, '1', { qos: 2 });
-      } else {
-        logger.error('Cannot connect to MQTT Broker');
+        this.mqttClient.publish(`${this.baseTopic}/control/emptyCache`, '1', { qos: 2 });
+
+        logger.debug('Subscribing Properties');
+        this.mqttClient.subscribe(`${this.baseTopic}/control/consumer/properties`, { qos: 0 });
       }
+      return Promise.resolve(true);
     } catch (err) {
       logger.error('Failed to establish device connection with the broker');
       logger.error(err);
@@ -116,7 +120,7 @@ export default class Device extends Pairing {
     return this.initialized ? this.mqttClient.disconnected : true;
   };
 
-  isInterfaceAggregate = (interfaceName: string): boolean => {
+  private isInterfaceAggregate = (interfaceName: string): boolean => {
     const defination = this.interfaces.filter(item => item.interface_name === interfaceName);
     if (!defination.length) {
       throw new Error('Interface not found in introspection');
@@ -126,7 +130,7 @@ export default class Device extends Pairing {
     return false;
   };
 
-  isInterfaceIndividual = (interfaceName: string): boolean => {
+  private isInterfaceIndividual = (interfaceName: string): boolean => {
     const defination = this.interfaces.filter(item => item.interface_name === interfaceName);
     if (!defination.length) {
       throw new Error('Interface not found in introspection');
@@ -136,7 +140,7 @@ export default class Device extends Pairing {
     return false;
   };
 
-  isInterfaceOwnerServer = (interfaceName: string): boolean => {
+  private isInterfaceOwnerServer = (interfaceName: string): boolean => {
     const defination = this.interfaces.filter(item => item.interface_name === interfaceName);
     if (!defination.length) {
       throw new Error('Interface not found in introspection');
@@ -152,7 +156,7 @@ export default class Device extends Pairing {
     value: string | number,
     timestamp?: Date,
   ): Promise<any> => {
-    const path = `${this.realm}/${this.hardwareId}/${interfaceName}${interfacePath}`;
+    const path = `${this.baseTopic}/${interfaceName}${interfacePath}`;
     const payload: any = {
       v: value,
     };
@@ -189,7 +193,7 @@ export default class Device extends Pairing {
     record: Record<string, any>,
     timestamp?: Date,
   ): Promise<any> => {
-    const path = `${this.realm}/${this.hardwareId}/${interfaceName}${interfacePath}`;
+    const path = `${this.baseTopic}/${interfaceName}${interfacePath}`;
     const payload: any = {
       v: record,
     };
@@ -229,17 +233,17 @@ export default class Device extends Pairing {
       throw new Error('Interface is not of server ownership');
     }
 
-    return this.mqttClient.subscribe(`${this.realm}/${this.hardwareId}/${interfaceName}/#`, { qos: 0 });
+    return this.mqttClient.subscribe(`${this.baseTopic}/${interfaceName}/#`, { qos: 0 });
   };
 
-  public on(event: 'connect', cb: OnConnectCallback): any;
-  public on(event: 'message', cb: OnMessageCallback): any;
-  public on(event: 'packetsend' | 'packetreceive', cb: OnPacketCallback): any;
-  public on(event: 'disconnect', cb: OnDisconnectCallback): any;
-  public on(event: 'error', cb: OnErrorCallback): any;
-  public on(event: 'close', cb: OnCloseCallback): any;
-  public on(event: 'end' | 'reconnect' | 'offline' | 'outgoingEmpty', cb: () => void): any;
-  public on(event: string, cb: Function): any {
+  on(event: 'connect', cb: OnConnectCallback): any;
+  on(event: 'message', cb: OnMessageCallback): any;
+  on(event: 'packetsend' | 'packetreceive', cb: OnPacketCallback): any;
+  on(event: 'disconnect', cb: OnDisconnectCallback): any;
+  on(event: 'error', cb: OnErrorCallback): any;
+  on(event: 'close', cb: OnCloseCallback): any;
+  on(event: 'end' | 'reconnect' | 'offline' | 'outgoingEmpty', cb: () => void): any;
+  on(event: string, cb: Function): any {
     switch (event) {
       case 'message':
         this.mqttClient.on('message', (topic, payload, packet) => {

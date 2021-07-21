@@ -1,7 +1,9 @@
 {
-  "name": "starter-node-ts",
+  "name": "astarte-device-sdk",
   "version": "1.0.0",
-  "description": "A starter boilerplate for node with typescript, lint and prettier configured",
+  "description": "Astarte device SDK for NodeJS",
+  "author": "sk.sagarkhan95@gmail.com",
+  "license": "ISC",
   "main": "index.js",
   "scripts": {
     "dev": "nodemon | pino-pretty",
@@ -21,12 +23,10 @@
   "keywords": [
     "node",
     "typscript",
-    "lint",
-    "airbnb lint",
-    "prettier"
+    "astarte",
+    "device",
+    "sdk"
   ],
-  "author": "sk.sagarkhan95@gmail.com",
-  "license": "ISC",
   "devDependencies": {
     "@types/node": "^15.12.4",
     "@types/pino": "^6.3.8",
