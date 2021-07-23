@@ -16,12 +16,15 @@ import httpClient from '../utils/http-client';
 import logger from '../utils/logger';
 import { PAIRING_INIT, OBTAIN_CERTS, OBTAIN_CONNECTION_INFO, REGISTER_CONFIGS, VALIDATE_CERTS } from '../utils/types';
 import { generateCSR, getClientCertificate, saveClientCertificate } from '../utils/crypto';
+import { validate, validators } from '../utils/validator';
 export default class Pairing {
   realm: string;
   pairingUrl: string;
   pairingToken: string;
 
   constructor(init: PAIRING_INIT) {
+    validate(validators.PAIRING_INIT, init);
+
     this.realm = init.realm;
     this.pairingUrl = init.pairingUrl;
     this.pairingToken = init.pairingToken;
@@ -32,6 +35,7 @@ export default class Pairing {
   }
 
   register = async (config: REGISTER_CONFIGS) => {
+    validate(validators.DEVICE_REGISTER, config);
     const payload = {
       data: {
         hw_id: config.hardwareId,
@@ -55,6 +59,7 @@ export default class Pairing {
 
   unregister = async (config: OBTAIN_CONNECTION_INFO) => {
     try {
+      validate(validators.DEVICE_UNREGISTER, config);
       const headers = { Authorization: `Bearer ${config.credentialSecret}` };
       const response = await httpClient.delete(`${this.pairingUrl}/${this.realm}/agent/devices/${config.hardwareId}`, {
         headers,
@@ -69,6 +74,7 @@ export default class Pairing {
 
   obtainCredentials = async (config: OBTAIN_CERTS) => {
     try {
+      validate(validators.OBTAIN_CREDENTIALS, config);
       const certificate = getClientCertificate(this.realm, config.hardwareId, config.dir);
       if (certificate) {
         try {
@@ -133,6 +139,7 @@ export default class Pairing {
 
   obtainConnectionInfo = async (config: OBTAIN_CONNECTION_INFO): Promise<string> => {
     try {
+      validate(validators.OBTAIN_CONNECTION_INFO, config);
       const headers = { Authorization: `Bearer ${config.credentialSecret}` };
       const response = await httpClient.get(`${this.pairingUrl}/${this.realm}/devices/${config.hardwareId}`, {
         headers,

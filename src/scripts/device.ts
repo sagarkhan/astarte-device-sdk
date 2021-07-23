@@ -26,6 +26,7 @@ import {
   OnMessageCallback,
   OnPacketCallback,
 } from 'mqtt';
+import { validate, validators } from '../utils/validator';
 
 export default class Device extends Pairing {
   private mqttClient: AsyncMqttClient;
@@ -45,6 +46,9 @@ export default class Device extends Pairing {
       pairingToken: init.pairingToken,
       realm: init.realm,
     });
+
+    validate(validators.DEVICE_INIT, init);
+
     this.hardwareId = init.hardwareId;
     this.realm = init.realm;
     this.credentialSecret = init.credentialSecret;
@@ -59,10 +63,12 @@ export default class Device extends Pairing {
   }
 
   addInterface(defination: INTERFACE_DEFINATION) {
+    validate(validators.INTERFACE_DEFINITION, defination);
     this.interfaces.push(defination);
   }
 
   removeInterface(interfaceName: string) {
+    validators.validateArgsInterfaceName([interfaceName]);
     this.interfaces = this.interfaces.filter(item => item['interface_name'] !== interfaceName);
     this.sendIntrospection();
   }
@@ -145,6 +151,7 @@ export default class Device extends Pairing {
   };
 
   private isInterfaceAggregate = (interfaceName: string): boolean => {
+    validators.validateArgsInterfaceName([interfaceName]);
     const defination = this.interfaces.filter(item => item.interface_name === interfaceName);
     if (!defination.length) {
       throw new Error('Interface not found in introspection');
@@ -155,6 +162,7 @@ export default class Device extends Pairing {
   };
 
   private isInterfaceIndividual = (interfaceName: string): boolean => {
+    validators.validateArgsInterfaceName([interfaceName]);
     const defination = this.interfaces.filter(item => item.interface_name === interfaceName);
     if (!defination.length) {
       throw new Error('Interface not found in introspection');
@@ -165,6 +173,7 @@ export default class Device extends Pairing {
   };
 
   private isInterfaceOwnerServer = (interfaceName: string): boolean => {
+    validators.validateArgsInterfaceName([interfaceName]);
     const defination = this.interfaces.filter(item => item.interface_name === interfaceName);
     if (!defination.length) {
       throw new Error('Interface not found in introspection');
@@ -180,6 +189,8 @@ export default class Device extends Pairing {
     value: string | number,
     timestamp?: Date,
   ): Promise<any> => {
+    validators.validateArgsPublishInvidual([interfaceName, interfacePath, value, timestamp]);
+
     const path = `${this.baseTopic}/${interfaceName}${interfacePath}`;
     const payload: any = {
       v: value,
@@ -217,6 +228,7 @@ export default class Device extends Pairing {
     record: Record<string, any>,
     timestamp?: Date,
   ): Promise<any> => {
+    validators.validateArgsPublishAggregate([interfaceName, interfacePath, record, timestamp]);
     const path = `${this.baseTopic}/${interfaceName}${interfacePath}`;
     const payload: any = {
       v: record,
@@ -249,6 +261,7 @@ export default class Device extends Pairing {
   };
 
   subscribe = (interfaceName: string): Promise<ISubscriptionGrant[]> => {
+    validators.validateArgsInterfaceName([interfaceName]);
     if (!this.isConnected()) {
       return Promise.reject('MQTT Connection Failed');
     }
