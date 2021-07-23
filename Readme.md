@@ -211,6 +211,18 @@ and connections
   [mqtt-packet](https://github.com/mcollina/mqtt-packet)
 
 
+
+#### Logging
+
+- While initializing the SDK you can pass `LOG_LEVEL = debug` to get more logging information, By default the `LOG_LEVEL` is `info`.
+
+
+```
+const pairing = new Pairing({ ...pairingOptions, LOG_LEVEL: 'debug' })
+const device = new Device({ ...deviceOptions, LOG_LEVEL: 'debug' })
+```
+
+
 #### Credits
 
 - [Astarte IOT Platform](https://github.com/astarte-platform/astarte).

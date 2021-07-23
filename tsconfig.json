@@ -15,5 +15,5 @@
     "strictPropertyInitialization": false,
     "declaration": true
   },
-  "include": ["src", "decs.d.ts"]
+  "include": ["src"]
 }

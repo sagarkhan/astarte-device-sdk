@@ -12,7 +12,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import Device from './scripts/device';
-export { default as Pairing } from './scripts/pairing';
+export type ConfigsSchema = {
+  APP_ID?: string;
+  LOG_LEVEL?: string;
+};
 
-export default Device;
+const GLOBAL_CONFIGS: ConfigsSchema = {
+  APP_ID: 'astarte-device-sdk',
+  LOG_LEVEL: 'info',
+};
+
+export default GLOBAL_CONFIGS;

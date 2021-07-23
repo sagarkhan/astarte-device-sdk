@@ -1,8 +1,21 @@
+/*
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 import httpClient from '../utils/http-client';
 import logger from '../utils/logger';
 import { PAIRING_INIT, OBTAIN_CERTS, OBTAIN_CONNECTION_INFO, REGISTER_CONFIGS, VALIDATE_CERTS } from '../utils/types';
 import { generateCSR, getClientCertificate, saveClientCertificate } from '../utils/crypto';
-
 export default class Pairing {
   realm: string;
   pairingUrl: string;
@@ -12,6 +25,10 @@ export default class Pairing {
     this.realm = init.realm;
     this.pairingUrl = init.pairingUrl;
     this.pairingToken = init.pairingToken;
+
+    if (init.LOG_LEVEL) {
+      logger.level = init.LOG_LEVEL;
+    }
   }
 
   register = async (config: REGISTER_CONFIGS) => {

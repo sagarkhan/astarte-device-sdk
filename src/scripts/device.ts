@@ -1,3 +1,17 @@
+/*
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 import mqtt, { AsyncMqttClient, ISubscriptionGrant } from 'async-mqtt';
 import { deserialize, serialize } from 'bson';
 import fs from 'fs';
@@ -38,6 +52,10 @@ export default class Device extends Pairing {
     this.pairingToken = init.pairingToken;
     this.dir = init.dir;
     this.baseTopic = `${this.realm}/${this.hardwareId}`;
+
+    if (init.LOG_LEVEL) {
+      logger.level = init.LOG_LEVEL;
+    }
   }
 
   addInterface(defination: INTERFACE_DEFINATION) {
@@ -46,7 +64,23 @@ export default class Device extends Pairing {
 
   removeInterface(interfaceName: string) {
     this.interfaces = this.interfaces.filter(item => item['interface_name'] !== interfaceName);
+    this.sendIntrospection();
   }
+
+  private sendIntrospection = () => {
+    if (this.interfaces.length) {
+      const introspection = this.interfaces
+        .map(item => {
+          return `${item.interface_name}:${item.version_major}:${item.version_minor}`;
+        })
+        .join(';');
+
+      logger.debug('Publishing Introspection');
+      logger.debug(introspection);
+
+      this.mqttClient.publish(`${this.baseTopic}`, introspection, { qos: 2 });
+    }
+  };
 
   connect = async () => {
     try {
@@ -77,18 +111,8 @@ export default class Device extends Pairing {
         logger.info('Connected to MQTT Broker');
         this.initialized = true;
 
-        if (this.interfaces.length) {
-          const introspection = this.interfaces
-            .map(item => {
-              return `${item.interface_name}:${item.version_major}:${item.version_minor}`;
-            })
-            .join(';');
-
-          logger.debug('Publishing Introspection');
-          logger.debug(introspection);
-
-          this.mqttClient.publish(`${this.baseTopic}`, introspection, { qos: 2 });
-        }
+        /* Send Initial Introspection */
+        this.sendIntrospection();
 
         logger.debug('Publishing Empty Cache Control');
         this.mqttClient.publish(`${this.baseTopic}/control/emptyCache`, '1', { qos: 2 });

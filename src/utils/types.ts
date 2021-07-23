@@ -1,3 +1,19 @@
+/*
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+import { ConfigsSchema } from './configs';
+
 export type INTROSPECTION_CONFIG = {
   [key: string]: {
     major: Number;
@@ -10,7 +26,7 @@ export type REGISTER_CONFIGS = {
   initialIntrospection?: INTROSPECTION_CONFIG;
 };
 
-export type PAIRING_INIT = {
+export type PAIRING_INIT = ConfigsSchema & {
   pairingUrl: string;
   pairingToken: string;
   realm: string;
@@ -29,7 +45,7 @@ export type VALIDATE_CERTS = OBTAIN_CONNECTION_INFO & {
   clientCertificate: string | Buffer;
 };
 
-export type DEVICE_INIT = {
+export type DEVICE_INIT = ConfigsSchema & {
   hardwareId: string;
   realm: string;
   credentialSecret: string;
