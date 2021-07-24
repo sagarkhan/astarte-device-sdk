@@ -17,6 +17,7 @@ import logger from '../utils/logger';
 import { PAIRING_INIT, OBTAIN_CERTS, OBTAIN_CONNECTION_INFO, REGISTER_CONFIGS, VALIDATE_CERTS } from '../utils/types';
 import { generateCSR, getClientCertificate, saveClientCertificate } from '../utils/crypto';
 import { validate, validators } from '../utils/validator';
+
 export default class Pairing {
   realm: string;
   pairingUrl: string;
@@ -34,7 +35,7 @@ export default class Pairing {
     }
   }
 
-  register = async (config: REGISTER_CONFIGS) => {
+  register = async (config: REGISTER_CONFIGS): Promise<string> => {
     validate(validators.DEVICE_REGISTER, config);
     const payload = {
       data: {
@@ -57,7 +58,7 @@ export default class Pairing {
     }
   };
 
-  unregister = async (config: OBTAIN_CONNECTION_INFO) => {
+  unregister = async (config: OBTAIN_CONNECTION_INFO): Promise<any> => {
     try {
       validate(validators.DEVICE_UNREGISTER, config);
       const headers = { Authorization: `Bearer ${config.credentialSecret}` };
@@ -72,7 +73,7 @@ export default class Pairing {
     }
   };
 
-  obtainCredentials = async (config: OBTAIN_CERTS) => {
+  obtainCredentials = async (config: OBTAIN_CERTS): Promise<string> => {
     try {
       validate(validators.OBTAIN_CREDENTIALS, config);
       const certificate = getClientCertificate(this.realm, config.hardwareId, config.dir);
@@ -108,8 +109,9 @@ export default class Pairing {
     }
   };
 
-  validateCredentials = async (config: VALIDATE_CERTS) => {
+  validateCredentials = async (config: VALIDATE_CERTS): Promise<boolean> => {
     try {
+      validate(validators.VALIDATE_CREDENTIALS, config);
       const headers = { Authorization: `Bearer ${config.credentialSecret}` };
       const data = {
         data: {

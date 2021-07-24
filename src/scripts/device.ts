@@ -1,3 +1,4 @@
+/* eslint-disable no-dupe-class-members */
 /*
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,10 +16,8 @@ limitations under the License.
 import mqtt, { AsyncMqttClient, ISubscriptionGrant } from 'async-mqtt';
 import { deserialize, serialize } from 'bson';
 import fs from 'fs';
-import Pairing from './pairing';
-import logger from '../utils/logger';
-import { DEVICE_INIT, INTERFACE_DEFINATION } from '../utils/types';
 import {
+  IPublishPacket,
   OnCloseCallback,
   OnConnectCallback,
   OnDisconnectCallback,
@@ -26,12 +25,15 @@ import {
   OnMessageCallback,
   OnPacketCallback,
 } from 'mqtt';
+import Pairing from './pairing';
+import logger from '../utils/logger';
+import { DEVICE_INIT, INTERFACE_DEFINATION } from '../utils/types';
 import { validate, validators } from '../utils/validator';
 
 export default class Device extends Pairing {
   private mqttClient: AsyncMqttClient;
   private baseTopic: string;
-  initialized: boolean = false;
+  initialized = false;
   hardwareId: string;
   realm: string;
   credentialSecret: string;
@@ -62,14 +64,14 @@ export default class Device extends Pairing {
     }
   }
 
-  addInterface(defination: INTERFACE_DEFINATION) {
+  addInterface(defination: INTERFACE_DEFINATION): void {
     validate(validators.INTERFACE_DEFINITION, defination);
     this.interfaces.push(defination);
   }
 
-  removeInterface(interfaceName: string) {
+  removeInterface(interfaceName: string): void {
     validators.validateArgsInterfaceName([interfaceName]);
-    this.interfaces = this.interfaces.filter(item => item['interface_name'] !== interfaceName);
+    this.interfaces = this.interfaces.filter(item => item.interface_name !== interfaceName);
     this.sendIntrospection();
   }
 
@@ -88,10 +90,10 @@ export default class Device extends Pairing {
     }
   };
 
-  connect = async () => {
+  connect = async (): Promise<boolean> => {
     try {
       if (this.isConnected()) {
-        return;
+        return true;
       }
 
       const certificate = await this.obtainCredentials({
@@ -134,7 +136,7 @@ export default class Device extends Pairing {
     }
   };
 
-  disconnect = (force: boolean = false): Promise<void> => {
+  disconnect = (force = false): Promise<void> => {
     logger.info('Disconnecting MQTT Client');
     if (!this.isConnected()) {
       return Promise.resolve();
@@ -188,7 +190,7 @@ export default class Device extends Pairing {
     interfacePath: string,
     value: string | number,
     timestamp?: Date,
-  ): Promise<any> => {
+  ): Promise<IPublishPacket | boolean> => {
     validators.validateArgsPublishInvidual([interfaceName, interfacePath, value, timestamp]);
 
     const path = `${this.baseTopic}/${interfaceName}${interfacePath}`;
@@ -202,7 +204,7 @@ export default class Device extends Pairing {
 
     try {
       if (!this.isConnected()) {
-        return;
+        return false;
       }
 
       if (!this.isInterfaceIndividual(interfaceName)) {
@@ -214,7 +216,7 @@ export default class Device extends Pairing {
       const result = await this.mqttClient.publish(path, serialize(payload), {
         qos: 0,
       });
-      return result || true;
+      return result;
     } catch (err) {
       logger.error(`Data publish error on path ${path} for interface type individual`);
       logger.error(`Payload = ${JSON.stringify(payload)}`);
@@ -227,7 +229,7 @@ export default class Device extends Pairing {
     interfacePath: string,
     record: Record<string, any>,
     timestamp?: Date,
-  ): Promise<any> => {
+  ): Promise<IPublishPacket | boolean> => {
     validators.validateArgsPublishAggregate([interfaceName, interfacePath, record, timestamp]);
     const path = `${this.baseTopic}/${interfaceName}${interfacePath}`;
     const payload: any = {
@@ -240,7 +242,7 @@ export default class Device extends Pairing {
 
     try {
       if (!this.isConnected()) {
-        return;
+        return false;
       }
 
       if (!this.isInterfaceAggregate(interfaceName)) {
@@ -252,7 +254,7 @@ export default class Device extends Pairing {
       const result = await this.mqttClient.publish(path, serialize(payload), {
         qos: 0,
       });
-      return result || true;
+      return result;
     } catch (err) {
       logger.error(`Data publish error on path ${path} for interface type individual`);
       logger.error(`Payload = ${JSON.stringify(payload)}`);
@@ -263,7 +265,7 @@ export default class Device extends Pairing {
   subscribe = (interfaceName: string): Promise<ISubscriptionGrant[]> => {
     validators.validateArgsInterfaceName([interfaceName]);
     if (!this.isConnected()) {
-      return Promise.reject('MQTT Connection Failed');
+      return Promise.reject(new Error('MQTT Connection Failed'));
     }
 
     if (!this.isInterfaceOwnerServer(interfaceName)) {
@@ -280,6 +282,7 @@ export default class Device extends Pairing {
   on(event: 'error', cb: OnErrorCallback): any;
   on(event: 'close', cb: OnCloseCallback): any;
   on(event: 'end' | 'reconnect' | 'offline' | 'outgoingEmpty', cb: () => void): any;
+  // eslint-disable-next-line @typescript-eslint/ban-types
   on(event: string, cb: Function): any {
     switch (event) {
       case 'message':
@@ -287,6 +290,7 @@ export default class Device extends Pairing {
           if (Buffer.isBuffer(payload)) {
             const index = 0;
             const size =
+              // eslint-disable-next-line no-bitwise
               payload[index] | (payload[index + 1] << 8) | (payload[index + 2] << 16) | (payload[index + 3] << 24);
             if (size >= 5) {
               cb(topic, deserialize(payload), packet);

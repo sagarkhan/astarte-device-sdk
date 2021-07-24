@@ -14,7 +14,7 @@ limitations under the License.
 
 import Joi from 'joi';
 
-export const validate = (schema: any, payload: any) => {
+export const validate = (schema: Record<string, any>, payload: Record<string, any>): void => {
   const { error } = Joi.object(schema).validate(payload);
   if (error) {
     throw error;
@@ -47,6 +47,12 @@ export const validators = {
     credentialSecret: Joi.string().required(),
     dir: Joi.string().required(),
   },
+  VALIDATE_CREDENTIALS: {
+    hardwareId: Joi.string().required(),
+    credentialSecret: Joi.string().required(),
+    clientCertificate: Joi.string().required(),
+    dir: Joi.string().optional(),
+  },
   OBTAIN_CONNECTION_INFO: {
     hardwareId: Joi.string().required(),
     credentialSecret: Joi.string().required(),
@@ -69,7 +75,7 @@ export const validators = {
     aggregation: Joi.string().valid('individual', 'object').optional(),
     mappings: Joi.optional(),
   },
-  validateArgsInterfaceName: (args: Array<any>): Boolean => {
+  validateArgsInterfaceName: (args: Array<any>): boolean => {
     if (!args || !args[0]) {
       throw new Error('Interface name is required');
     }
@@ -80,7 +86,7 @@ export const validators = {
 
     return true;
   },
-  commonPublish: (args: Array<any>): Boolean => {
+  commonPublish: (args: Array<any>): boolean => {
     if (!args[0] || typeof args[0] !== 'string') {
       throw new Error(`Argument interfaceName missing. Expected string received ${typeof args[0]}`);
     }
@@ -90,11 +96,11 @@ export const validators = {
     }
 
     if (!(args[3] instanceof Date)) {
-      throw new Error(`Argument date is of invalid type, Expected Javascript Date object`);
+      throw new Error('Argument date is of invalid type, Expected Javascript Date object');
     }
     return true;
   },
-  validateArgsPublishInvidual: (args: Array<any>): Boolean => {
+  validateArgsPublishInvidual: (args: Array<any>): boolean => {
     if (!args) {
       throw new Error('Missing function arguments i.e interfaceName, interfacePath, value, timestamp');
     }
@@ -108,7 +114,7 @@ export const validators = {
 
     return true;
   },
-  validateArgsPublishAggregate: (args: Array<any>): Boolean => {
+  validateArgsPublishAggregate: (args: Array<any>): boolean => {
     if (!args) {
       throw new Error('Missing function arguments i.e interfaceName, interfacePath, record, timestamp');
     }
@@ -116,7 +122,7 @@ export const validators = {
     validators.commonPublish(args);
 
     if (!args[2] || typeof args[2] !== 'object' || !Object.keys(args[2]).length) {
-      throw new Error(`Argument record missing or empty. Expected valid javascript object`);
+      throw new Error('Argument record missing or empty. Expected valid javascript object');
     }
 
     return true;

@@ -1,6 +1,6 @@
 {
   "name": "astarte-device-sdk",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Astarte device SDK for NodeJS",
   "author": "sk.sagarkhan95@gmail.com",
   "license": "ISC",
@@ -29,11 +29,12 @@
     "dev:debug": "nodemon --inspect src/index.ts",
     "build": "rimraf ./build && npx tsc",
     "start": "npm run build && node build/index.js | pino-pretty",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha -r ts-node/register ./src/test/index.test.ts",
     "lint": "eslint 'src/**/*.ts'",
     "precise-commits": "precise-commits  --whitelist \"**/src/**/*\" --check-only",
-    "husky": "npm run lint && npm run precise-commits",
-    "prepare": "npm run build"
+    "husky": "npm run lint && npm run precise-commits && npm run test",
+    "prepare": "npm run build",
+    "prepublish": "npm run husky"
   },
   "husky": {
     "hooks": {
@@ -41,15 +42,20 @@
     }
   },
   "devDependencies": {
+    "@types/chai": "^4.2.21",
+    "@types/mocha": "^9.0.0",
     "@types/node": "^15.12.4",
     "@types/pino": "^6.3.8",
     "@typescript-eslint/eslint-plugin": "4.27.0",
     "@typescript-eslint/parser": "4.27.0",
+    "chai": "^4.3.4",
     "eslint": "7.29.0",
     "eslint-config-airbnb": "18.2.1",
     "eslint-config-prettier": "8.3.0",
+    "eslint-plugin-import": "^2.23.4",
     "eslint-plugin-prettier": "3.4.0",
     "husky": "^6.0.0",
+    "mocha": "^9.0.2",
     "nodemon": "^2.0.7",
     "precise-commits": "^1.0.2",
     "prettier": "^2.3.1",

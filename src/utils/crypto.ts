@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /*
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,7 +20,7 @@ import logger from './logger';
 const ECDSA = require('ecdsa-secp256r1');
 const ECSA_CSR = require('ecdsa-csr');
 
-export const generateCSR = async (realm: string, deviceId: string, dir: string) => {
+export const generateCSR = async (realm: string, deviceId: string, dir: string): Promise<string> => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir);
   }
@@ -38,7 +39,7 @@ export const generateCSR = async (realm: string, deviceId: string, dir: string) 
   return csr.toString();
 };
 
-export const saveClientCertificate = (realm: string, deviceId: string, dir: string, certificate: string) => {
+export const saveClientCertificate = (realm: string, deviceId: string, dir: string, certificate: string): void => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir);
   }
@@ -46,7 +47,7 @@ export const saveClientCertificate = (realm: string, deviceId: string, dir: stri
   fs.writeFileSync(`${dir}/${realm}__${deviceId}_client_certificate.crt`, certificate);
 };
 
-export const getClientCertificate = (realm: string, deviceId: string, dir: string) => {
+export const getClientCertificate = (realm: string, deviceId: string, dir: string): string => {
   logger.debug('Get Existing Client Certificate');
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir);
@@ -54,8 +55,8 @@ export const getClientCertificate = (realm: string, deviceId: string, dir: strin
 
   const clientCertificate = path.resolve(path.join(__dirname), `${dir}/${realm}__${deviceId}_client_certificate.crt`);
   if (fs.existsSync(clientCertificate)) {
-    return fs.readFileSync(`${dir}/${realm}__${deviceId}_client_certificate.crt`);
+    return fs.readFileSync(`${dir}/${realm}__${deviceId}_client_certificate.crt`).toString('utf-8');
   }
   logger.debug('Client Certificate not found');
-  return false;
+  return '';
 };

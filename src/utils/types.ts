@@ -16,8 +16,8 @@ import { ConfigsSchema } from './configs';
 
 export type INTROSPECTION_CONFIG = {
   [key: string]: {
-    major: Number;
-    minor: Number;
+    major: number;
+    minor: number;
   };
 };
 

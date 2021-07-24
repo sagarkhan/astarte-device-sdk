@@ -14,9 +14,7 @@ limitations under the License.
 
 import Axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 
-const responseHandler = (response: AxiosResponse) => {
-  return response.data;
-};
+const responseHandler = (response: AxiosResponse) => response.data;
 
 const errorHandler = (error: AxiosError) => {
   if (error.response) {
