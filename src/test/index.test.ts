@@ -167,6 +167,8 @@ describe('Validators Success Check', () => {
         version_major: 0,
         version_minor: 1,
         type: 'datastream',
+        description: 'Some description',
+        doc: 'Some doc',
         ownership: 'device',
         aggregation: 'object',
       }),

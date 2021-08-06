@@ -18,7 +18,7 @@ const responseHandler = (response: AxiosResponse) => response.data;
 
 const errorHandler = (error: AxiosError) => {
   if (error.response) {
-    throw error.response;
+    throw error.response.data;
   } else if (error.request) {
     throw error.request;
   }

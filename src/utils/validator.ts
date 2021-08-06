@@ -73,6 +73,8 @@ export const validators = {
     type: Joi.string().valid('datastream', 'properties').required(),
     ownership: Joi.string().valid('device', 'server').required(),
     aggregation: Joi.string().valid('individual', 'object').optional(),
+    description: Joi.optional(),
+    doc: Joi.optional(),
     mappings: Joi.optional(),
   },
   validateArgsInterfaceName: (args: Array<any>): boolean => {
@@ -95,7 +97,7 @@ export const validators = {
       throw new Error(`Argument interfacePath missing. Expected string received ${typeof args[1]}`);
     }
 
-    if (!(args[3] instanceof Date)) {
+    if (args[3] && !(args[3] instanceof Date)) {
       throw new Error('Argument date is of invalid type, Expected Javascript Date object');
     }
     return true;

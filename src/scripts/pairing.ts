@@ -58,13 +58,17 @@ export default class Pairing {
     }
   };
 
-  unregister = async (config: OBTAIN_CONNECTION_INFO): Promise<any> => {
+  unregister = async (hardwareId: string): Promise<any> => {
     try {
-      validate(validators.DEVICE_UNREGISTER, config);
-      const headers = { Authorization: `Bearer ${config.credentialSecret}` };
-      const response = await httpClient.delete(`${this.pairingUrl}/${this.realm}/agent/devices/${config.hardwareId}`, {
-        headers,
-      });
+      if (!hardwareId) {
+        throw new Error('Missing parameter hardwareId');
+      }
+      const headers = { Authorization: `Bearer ${this.pairingToken}` };
+      const response = await httpClient.delete(
+        `${this.pairingUrl}/${this.realm}/agent/devices/${hardwareId}`,
+        {},
+        { headers },
+      );
       return response;
     } catch (err) {
       logger.error('Device Registration Error');
