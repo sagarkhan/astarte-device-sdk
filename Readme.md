@@ -44,6 +44,13 @@ pairing.register({ hardwareId: "<uuid5 encoded device_id>" }).then((credentialSe
 
 Once the device is registered and you saved the credentialSecret, the job of Pairing helper is all done, from here onwards you will be using Device SDK for all device related operations.
 
+
+#### Un-Register Device
+
+```
+pairing.unregister(hardwareId)
+```
+
 ---
 
 #### Initialize Device
